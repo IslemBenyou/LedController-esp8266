@@ -338,10 +338,10 @@ void saveState() {
 ////    Serial.println(timers[i].offMinute);
 //  }
      EEPROM.put(44, speed);  // Start reading from address 2
-  // EEPROM.put(16, brightness);
+   EEPROM.put(48, brightness);
   // Serial.println("Saved brightness: " + String(brightness));
   
-  // EEPROM.put(20, powerState);
+   EEPROM.put(52, powerState);
   // Serial.println("Saved powerState: " + String(powerState ? "true" : "false"));
   
   EEPROM.commit(); // Commit the changes to EEPROM
@@ -382,10 +382,10 @@ void loadState() {
 //    Serial.println(timers[i].offMinute);
 //  }
     EEPROM.get(44, speed);  // Start reading from address 2
-  // EEPROM.get(16, brightness);
+   EEPROM.get(48, brightness);
   // Serial.println("Loaded brightness: " + String(brightness));
   
-  // EEPROM.get(20, powerState);
+   EEPROM.get(52, powerState);
   // Serial.println("Loaded powerState: " + String(powerState ? "true" : "false"));
   
   Serial.println("State loaded from EEPROM successfully.");
@@ -414,6 +414,7 @@ void checkTimers() {
       // Check if the current time matches the ON time of a timer
       if (currentHour == t.onHour && currentMinute == t.onMinute && !t.lastActionOn) {
         ws2812fx.start(); // Turn on the LED strip
+        powerState = true;
         t.lastActionOn = true; // Mark "on" action as triggered
         Serial.println("Timer ON: LED strip turned ON");
       }
@@ -421,6 +422,7 @@ void checkTimers() {
       // Check if the current time matches the OFF time of a timer
       if (currentHour == t.offHour && currentMinute == t.offMinute && t.lastActionOn) {
         ws2812fx.stop(); // Turn off the LED strip
+        powerState = false;
         t.lastActionOn = false; // Mark "off" action as triggered
         Serial.println("Timer OFF: LED strip turned OFF");
       }
@@ -567,7 +569,7 @@ void handleSetBrightness() {
     Serial.print("Set brightness to: ");
     Serial.println(brightness);
     
-//    saveState(); // Save the new brightness
+    saveState(); // Save the new brightness
     server.send(200, "text/plain", "Brightness set to " + String(brightness));
   } else {
     server.send(400, "text/plain", "Bad Request: Missing 'brightness' argument");
@@ -587,7 +589,7 @@ void handleTogglePower() {
     Serial.print("Power state set to: ");
     Serial.println(powerState ? "on" : "off");
     
-//    saveState(); // Save the new power state
+    saveState(); // Save the new power state
     server.send(200, "text/plain", "Power " + String(powerState ? "on" : "off"));
   } else {
     server.send(400, "text/plain", "Bad Request: Missing 'state' argument");
